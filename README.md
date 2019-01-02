@@ -51,3 +51,36 @@ class User(db.Model):
     addtime = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     uuid = db.Column(db.String)
 ```
+
+# 4. 前台布局搭建
++ 静态文件引入: {{ url_for('static', filename='文件路径') }}
++ 定义路由: {{ url_for('模板名.视图名', 变量=参数) }}
++ 定义数据块: {% block 数据块名称 %} {% endblock %}
+
+# 5. 会员页面
++ 登录
+```python
+@home.route('/login/')
+def login():
+    return render_template('home/login.html')
+```
++ 退出
+```python
+@home.route('/logout/')
+def logout():
+    return redirect(url_for('home.login'))
+```
++ 会员中心`@home.route('/user/')`
++ 修改密码`@home.route('/pwd/')`
++ 评论记录`@home.route('/comments/')`
++ 登录日志`@home.route('/loginlog/')`
++ 收藏电影`@home.route('/moviecol/')`
++ 搜索页面`@home.route('/search/')`
++ 详情页面`@home.route('/play/')`
++ 404页面
+```python
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('common/404.html'), 404
+```
+
