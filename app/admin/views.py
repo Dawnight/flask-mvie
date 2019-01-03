@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, redirect, url_for
 from . import admin
+from app.admin.forms import LoginForm
 
 
 @admin.route('/')
@@ -8,9 +9,14 @@ def index():
     return render_template('admin/index.html')
 
 
-@admin.route('/login/')
+@admin.route('/login/', methods=['GET', 'POST'])
 def login():
-    return render_template('admin/login.html')
+    form = LoginForm()
+    if form.validate_on_submit():
+        data = form.data
+        print('----------data----------')
+        print(data)
+    return render_template('admin/login.html', form=form)
 
 
 @admin.route('/logout/')
@@ -116,4 +122,3 @@ def admin_add():
 @admin.route('/admin/list')
 def admin_list():
     return render_template('admin/admin_list.html')
-

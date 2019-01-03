@@ -84,3 +84,10 @@ def page_not_found(error):
     return render_template('common/404.html'), 404
 ```
 
+# 6. 管理员登录
++ `app/__init__.py`中创建db对象
++ `app/models.py`中导入db对象
++ `app/admin/forms.py`中定义表单验证
++ `app/templates/admin/login.html`使用表单字段，信息验证，消息闪现
++ `app/admin/views.py`中处理登录请求，保存会话
++ `app/admin/views.py`中处理登录装饰器，访问控制
