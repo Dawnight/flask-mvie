@@ -2,6 +2,7 @@
 from datetime import datetime
 from app import db
 
+
 # 用户
 class User(db.Model):
     __tablename__ = 'user'
@@ -22,6 +23,10 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
+
 
 # 用户登录日志
 class Userlog(db.Model):
@@ -30,6 +35,7 @@ class Userlog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     ip = db.Column(db.String(100))
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -80,6 +86,7 @@ class Preview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True)
     logo = db.Column(db.String(255), unique=True)
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -94,6 +101,7 @@ class Comment(db.Model):
     content = db.Column(db.Text)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -107,6 +115,7 @@ class Moviecol(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -120,6 +129,7 @@ class Auth(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     url = db.Column(db.String(255), unique=True)
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -164,6 +174,7 @@ class Adminlog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
     ip = db.Column(db.String(100))
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
@@ -178,6 +189,7 @@ class Oplog(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
     ip = db.Column(db.String(100))
     reason = db.Column(db.String(1024))
+
     # addtime = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
