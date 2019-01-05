@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, redirect, url_for, flash, session, request
 from . import admin
-from app.admin.forms import LoginForm, TagForm
-from app.models import Admin, Tag
-from app import db
+from app.admin.forms import LoginForm, TagForm, MovieForm
+from app.models import Admin, Tag, Movie
+from app import db, app
 from functools import wraps
+from werkzeug.utils import secure_filename
+import os, uuid, datetime
 
 
 def admin_login_req(f):
@@ -15,6 +17,13 @@ def admin_login_req(f):
         return f(*args, **kwargs)
 
     return decorator_function
+
+
+# 修改文件名称
+def change_filename(filename):
+    fileinfo = os.path.splitext(filename)
+    filename = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + str(uuid.uuid4().hex) + fileinfo[-1]
+    return filename
 
 
 @admin.route('/')
@@ -101,7 +110,7 @@ def tag_edit(id=None):
         if tag.name != data['name'] and tag_count == 1:
             flash('名称已经存在', 'err')
             return redirect(url_for('admin.tag_edit', id=id))
-        tag.name=data['name']
+        tag.name = data['name']
         db.session.add(tag)
         db.session.commit()
         flash('修改标签成功', 'ok')
@@ -109,10 +118,39 @@ def tag_edit(id=None):
     return render_template('admin/tag_edit.html', form=form, tag=tag)
 
 
-@admin.route('/movie/add')
+@admin.route('/movie/add', methods=['GET', 'POST'])
 @admin_login_req
 def movie_add():
-    return render_template('admin/movie_add.html')
+    form = MovieForm()
+    if form.validate_on_submit():
+        data = form.data
+        file_url = secure_filename(form.url.data.filename)
+        file_logo = secure_filename(form.logo.data.filename)
+        if not os.path.exists(app.config['UP_DIR']):
+            os.makedirs(app.config['UP_DIR'])
+            os.chmod(app.config['UP_DIR'], 0o770)
+        url = change_filename(form.url.data.filename)
+        logo = change_filename(form.logo.data.filename)
+        form.url.data.save(app.config['UP_DIR'] + url)
+        form.logo.data.save(app.config['UP_DIR'] + logo)
+        movie = Movie(
+            title=data['title'],
+            url=url,
+            info=data['info'],
+            logo=logo,
+            star=int(data['star']),
+            playnum=0,
+            commentnum=0,
+            tag_id=int(data['tag_id']),
+            area=data['area'],
+            release_time=data['release_time'],
+            length=data['length'],
+        )
+        db.session.add(movie)
+        db.session.commit()
+        flash('电影添加成功', 'ok')
+        return redirect(url_for('admin.movie_add'))
+    return render_template('admin/movie_add.html', form=form)
 
 
 @admin.route('/movie/list')
