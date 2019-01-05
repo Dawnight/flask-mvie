@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, redirect, url_for, flash, session, request
 from . import admin
-from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
+from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
 from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol
 from app import db, app
 from functools import wraps
@@ -39,7 +39,7 @@ def login():
         data = form.data
         admin = Admin.query.filter_by(name=data['account']).first()
         if not admin.check_pwd(data['pwd']):
-            flash('密码错误')
+            flash('密码错误', 'err')
             return redirect(url_for('admin.login'))
         session['admin'] = data['account']
         return redirect(request.args.get('next') or url_for('admin.index'))
@@ -53,10 +53,21 @@ def logout():
     return redirect(url_for('admin.login'))
 
 
-@admin.route('/pwd/')
+@admin.route('/pwd/', methods=['GET', 'POST'])
 @admin_login_req
 def pwd():
-    return render_template('admin/pwd.html')
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        admin = Admin.query.filter_by(name=session['admin']).first()
+        from werkzeug.security import generate_password_hash
+        # admin.pwd = generate_password_hash(data['new_pwd'])
+        admin.pwd = data['new_pwd']
+        db.session.add(admin)
+        db.session.commit()
+        flash('修改密码成功，请重新登录', 'ok')
+        return redirect(url_for('admin.logout'))
+    return render_template('admin/pwd.html', form=form)
 
 
 @admin.route('/tag/add', methods=['GET', 'POST'])
@@ -314,10 +325,10 @@ def user_del(id=None):
 def comment_list(page):
     if page is None:
         page = 1
-    page_data = Comment.query.join(Movie)\
-        .join(User)\
-        .filter(Movie.id == Comment.movie_id, User.id == Comment.user_id)\
-        .order_by(Comment.id)\
+    page_data = Comment.query.join(Movie) \
+        .join(User) \
+        .filter(Movie.id == Comment.movie_id, User.id == Comment.user_id) \
+        .order_by(Comment.id) \
         .paginate(page=page, per_page=10)
     return render_template('admin/comment_list.html', page_data=page_data)
 
@@ -337,10 +348,10 @@ def comment_del(id=None):
 def moviecol_list(page):
     if page is None:
         page = 1
-    page_data = Moviecol.query.join(Movie)\
-        .join(User)\
-        .filter(Movie.id == Moviecol.movie_id, User.id == Moviecol.user_id)\
-        .order_by(Moviecol.id)\
+    page_data = Moviecol.query.join(Movie) \
+        .join(User) \
+        .filter(Movie.id == Moviecol.movie_id, User.id == Moviecol.user_id) \
+        .order_by(Moviecol.id) \
         .paginate(page=page, per_page=10)
     return render_template('admin/moviecol_list.html', page_data=page_data)
 
