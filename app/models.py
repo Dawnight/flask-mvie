@@ -24,9 +24,10 @@ class User(db.Model):
         return '<User %r>' % self.name
 
     def check_pwd(self, pwd):
-        # from werkzeug.security import check_password_hash
-        # return check_password_hash(self.pwd, pwd)
-        return pwd
+        if self.pwd == pwd:
+            return True
+        else:
+            return False
 
 
 # 用户登录日志
